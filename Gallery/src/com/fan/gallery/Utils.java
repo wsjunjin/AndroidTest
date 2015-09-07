@@ -127,6 +127,9 @@ public class Utils {
         String eL = "\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]\\w*:";		
         Pattern p = Pattern.compile(eL);
         String[] arr = p.split(info);
+        if (arr.length <= 3) {
+			return new double[]{0};
+		}
         String[] arrPidCpuTime = new String[(arr.length - 1)/2];
         String[] arrCpuTotalTime = new String[(arr.length - 1)/2];
         double[] arrPercent = new double[arrPidCpuTime.length - 1];

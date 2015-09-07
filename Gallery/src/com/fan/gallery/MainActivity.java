@@ -28,19 +28,23 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.os.Build;
 
 public class MainActivity extends Activity {
+	private static final int WRITE_LOG = 0;
+	private static final int WRITE_ALOG = 1;
+	private static final int ANALYZE_LOG = 2;
 	private Button logButton;
 	private Button infoButton;
 	private Button analyzeButton;
+	private EditText pkgName;
 	private TextView tv;
 	private Handler handler;
 	private LogRunnable runnable;
 	private LogInfoRunnable infoRunnable;
 	private AnalyzeRunnable analyzeRunnable;
-	private boolean isRunFlag;
 	private int pid;
 
 	@Override
@@ -50,29 +54,31 @@ public class MainActivity extends Activity {
         initView();
 
 		tv.setMovementMethod(new ScrollingMovementMethod());
-		String pkgName = "com.youku.phone";
-		int uid = CpuInfo.getUid(getApplicationContext(),pkgName);
-		pid = CpuInfo.getPid(getApplicationContext(), uid, pkgName);
-        isRunFlag = false;
         handler = new Handler(){
 			@Override
 			public void handleMessage(Message msg) {
 				// TODO Auto-generated method stub
 				switch (msg.what) {
-				case 0:
-					tv.setText("写日志信息1");
+				case WRITE_LOG:
+					tv.setText("写test日志");
 					break;
-				case 1:
-					tv.setText("写日志信息2");
+				case WRITE_ALOG:
+					tv.setText("写Cpu日志");
 					break;	
-				case 2:
+				case ANALYZE_LOG:
 					Bundle bundle = msg.getData();
 					double[] arrValues = bundle.getDoubleArray("values");
 					double[] arrx = bundle.getDoubleArray("x");
-					tv.setText(Arrays.toString(arrValues));					
-			        CpuPercent att = new CpuPercent(arrValues,arrx);
-			        Intent intent = att.execute(getApplicationContext());
-			        startActivity(intent);
+					if (arrValues.length == 1) {
+						tv.setText("Cpu采样数据为1");	
+					}
+					else {
+						tv.setText("Cpu/%: " + Arrays.toString(arrValues));					
+				        CpuPercent att = new CpuPercent(arrValues,arrx);
+				        Intent intent = att.execute(getApplicationContext());
+				        startActivity(intent);
+					}
+
 				default:
 					break;
 				}	
@@ -95,29 +101,33 @@ public class MainActivity extends Activity {
 
 	private void initView() {
 		// TODO Auto-generated method stub
-		logButton = (Button)findViewById(R.id.button1);
-		infoButton = (Button)findViewById(R.id.button2);
-		analyzeButton = (Button)findViewById(R.id.button3);
-		tv = (TextView)findViewById(R.id.textView1);
+		logButton = (Button)findViewById(R.id.createBtn);
+		infoButton = (Button)findViewById(R.id.writeBtn);
+		analyzeButton = (Button)findViewById(R.id.analyzeBtn);
+		tv = (TextView)findViewById(R.id.result);
+		pkgName = (EditText)findViewById(R.id.pkgInfo);
 	}
 
 	private class ClickListener implements OnClickListener{
 
 		@Override
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
+			// TODO Auto-generated method stub		
 			if (Utils.isSdCardExist()) {
+				String packageName = pkgName.getText().toString();
+				int uid = CpuInfo.getUid(getApplicationContext(),packageName);
+				pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
 				switch (v.getId()) {
-				case R.id.button1:
+				case R.id.createBtn:
 					Utils.writeLog(Utils.LOG_FILE_NAME,"开始日志", false);
 					Utils.writeLog(Utils.CPU_FILE_NAME,"开始日志", false);
-					tv.setText("点击了开始日志按钮");
+					tv.setText("创建日志，请打开需要测试APP后点击'写日志'按钮开始测试");
 					break;
-				case R.id.button2:
+				case R.id.writeBtn:
 					new Thread(runnable).start();
 					new Thread(infoRunnable).start();
 					break;
-				case R.id.button3:
+				case R.id.analyzeBtn:
 					new Thread(analyzeRunnable).start();
 				default:
 					break;
@@ -133,8 +143,8 @@ public class MainActivity extends Activity {
 		public void run() {
 			// TODO Auto-generated method stub
 			Utils.writeLog(Utils.LOG_FILE_NAME,"day day up", true);
-			Message msg = new Message();
-			msg.what = 0;
+			Message msg = handler.obtainMessage();
+			msg.what = WRITE_LOG;
 			handler.sendMessage(msg);
 			Log.e("MainActivity", "button1");
 		}
@@ -147,8 +157,8 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 			Utils.writeLog(Utils.CPU_FILE_NAME, "CpuTimeForPid:" + CpuInfo.getCpuTimeForPid(pid), true);
 			Utils.writeLog(Utils.CPU_FILE_NAME, "CpuTotalTime:" + CpuInfo.getCpuTotalTime(), true);
-			Message msg = new Message();
-			msg.what = 1;
+			Message msg = handler.obtainMessage();
+			msg.what = WRITE_ALOG;
 			handler.sendMessage(msg);
 			handler.postDelayed(this, 60000 * Utils.DELAYTIME);
 			Log.e("MainActivity", "button2");
@@ -161,8 +171,8 @@ public class MainActivity extends Activity {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			Message msg = new Message();
-			msg.what = 2;
+			Message msg = handler.obtainMessage();
+			msg.what = ANALYZE_LOG;
 			double[] arrValues = Utils.getCpuPercent(Utils.CPU_FILE_NAME);
 			double[] arrx = new double[arrValues.length];
 			arrx[0] = 0;
@@ -178,6 +188,20 @@ public class MainActivity extends Activity {
 		}
 		
 	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		handler.removeCallbacks(runnable);
+		handler.removeCallbacks(infoRunnable);
+		handler.removeCallbacks(analyzeRunnable);
+		handler.removeMessages(WRITE_LOG);
+		handler.removeMessages(WRITE_ALOG);
+		handler.removeMessages(ANALYZE_LOG);
+		Log.e("MainActivity", "onDestroy");
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -186,6 +210,10 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	
+	
+	
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will

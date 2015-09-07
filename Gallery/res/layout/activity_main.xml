@@ -6,39 +6,62 @@
     tools:context="com.fan.gallery.MainActivity"
     tools:ignore="MergeRootFrame" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
-        android:layout_below="@+id/button1"
-        android:layout_marginTop="56dp"
-        android:text="TextView" />
-
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/analyzeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="28dp"
-        android:text="创建日志" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
+        android:layout_above="@+id/result"
         android:layout_alignParentRight="true"
         android:layout_marginRight="21dp"
         android:text="分析日志" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/writeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
+        android:layout_above="@+id/result"
         android:layout_centerHorizontal="true"
         android:text="写日志" />
+
+    <TextView
+        android:id="@+id/packageName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="25dp"
+        android:text="包名" />
+
+    <EditText
+        android:id="@+id/pkgInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/packageName"
+        android:layout_alignBottom="@+id/packageName"
+        android:layout_alignRight="@+id/analyzeBtn"
+        android:layout_toRightOf="@+id/packageName"
+        android:ems="10"
+        android:hint="请输入包名后开始测试" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/createBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/pkgInfo"
+        android:layout_marginTop="50dp"
+        android:text="创建日志" />
+
+    <TextView
+        android:id="@+id/result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/createBtn"
+        android:layout_marginTop="44dp"
+        android:text="TextView" />
 
 </RelativeLayout>
