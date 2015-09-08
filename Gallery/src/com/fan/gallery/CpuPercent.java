@@ -22,11 +22,13 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 
 public class CpuPercent extends AbstractChart {
-	private double[] arrValues;
-	private double[] arrx;
-	public CpuPercent(double[] arrValues,double[] arrx){
-		this.arrValues = arrValues;
-		this.arrx = arrx;
+	private List<double[]> x;
+	private List<double[]> values;
+	private String[] titles;
+	public CpuPercent(List<double[]> arrValues,List<double[]> arrx,String[] titles){
+		this.values = arrValues;
+		this.x = arrx;
+		this.titles = titles;
 	}
 
 	public String getName() {
@@ -45,26 +47,10 @@ public class CpuPercent extends AbstractChart {
 	 * @return the built intent
 	 */
 	public Intent execute(Context context) {
-		// 每个item的title
-		String[] titles = new String[] { "cpu usage",};
-		// x轴的值
-/*		double[] arrValues = Utils.getCpuPercent(Utils.CPU_FILE_NAME);
-		double[] arrx = new double[arrValues.length];
-		arrx[0] = 0;
-		for (int i = 1; i < arrx.length; i++) {
-			arrx[i] = arrx[i - 1] + Utils.DELAYTIME;
-		}*/
-		List<double[]> x = new ArrayList<double[]>();
-		for (int i = 0; i < titles.length; i++) {
-			x.add(arrx);
-		}
-		// y轴的值
-		List<double[]> values = new ArrayList<double[]>();
-		values.add(arrValues);
-		
-		int[] colors = new int[] { Color.BLUE,};
+	
+		int[] colors = new int[] { Color.BLUE,Color.GREEN,Color.RED,Color.CYAN};
 		// 点的样式
-		PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE,};
+		PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE,PointStyle.CIRCLE,PointStyle.CIRCLE,PointStyle.CIRCLE};
 		XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
 		int length = renderer.getSeriesRendererCount();
 		// 点是空心还是实心

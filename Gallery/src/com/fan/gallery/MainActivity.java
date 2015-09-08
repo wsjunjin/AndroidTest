@@ -1,6 +1,8 @@
 package com.fan.gallery;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
@@ -33,8 +35,8 @@ import android.widget.TextView;
 import android.os.Build;
 
 public class MainActivity extends Activity {
-	private static final int WRITE_LOG = 0;
-	private static final int WRITE_ALOG = 1;
+	private static final int WRITE_MEM_LOG = 0;
+	private static final int WRITE_CPU_LOG = 1;
 	private static final int ANALYZE_LOG = 2;
 	private Button logButton;
 	private Button infoButton;
@@ -52,29 +54,44 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
         initView();
-
 		tv.setMovementMethod(new ScrollingMovementMethod());
         handler = new Handler(){
 			@Override
 			public void handleMessage(Message msg) {
 				// TODO Auto-generated method stub
 				switch (msg.what) {
-				case WRITE_LOG:
+				case WRITE_MEM_LOG:
 					tv.setText("写test日志");
 					break;
-				case WRITE_ALOG:
+				case WRITE_CPU_LOG:
 					tv.setText("写Cpu日志");
 					break;	
 				case ANALYZE_LOG:
 					Bundle bundle = msg.getData();
-					double[] arrValues = bundle.getDoubleArray("values");
-					double[] arrx = bundle.getDoubleArray("x");
+					double[] arrValues = bundle.getDoubleArray("cpu");					
 					if (arrValues.length == 1) {
 						tv.setText("Cpu采样数据为1");	
 					}
 					else {
-						tv.setText("Cpu/%: " + Arrays.toString(arrValues));					
-				        CpuPercent att = new CpuPercent(arrValues,arrx);
+						double[] arrTotalPss = bundle.getDoubleArray("TotalPss");
+						double[] arrTotalPrivateDirty = bundle.getDoubleArray("TotalPrivateDirty");
+						double[] arrTotalSharedDirty = bundle.getDoubleArray("TotalSharedDirty");
+						double[] arrx = bundle.getDoubleArray("x");
+						List<double[]> listValues = new ArrayList<double[]>();
+						listValues.add(arrValues);
+						listValues.add(arrTotalPss);
+						listValues.add(arrTotalPrivateDirty);
+						listValues.add(arrTotalSharedDirty);
+						List<double[]> listx = new ArrayList<double[]>();
+						int len = listValues.size();
+						for (int i = 0; i < len; i++) {
+							listx.add(arrx);
+						}
+						tv.setText("Cpu/%: " + Arrays.toString(arrValues) + "\n" + 
+						"TotalPss/KB: " + Arrays.toString(arrTotalPss) + "\n"
+						+ "TotalPrivateDirty/KB: " + Arrays.toString(arrTotalPrivateDirty) + "\n"
+						+ "TotalSharedDirty/KB: " + Arrays.toString(arrTotalSharedDirty));					
+				        CpuPercent att = new CpuPercent(listValues,listx,bundle.getStringArray("title"));
 				        Intent intent = att.execute(getApplicationContext());
 				        startActivity(intent);
 					}
@@ -119,7 +136,7 @@ public class MainActivity extends Activity {
 				pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
 				switch (v.getId()) {
 				case R.id.createBtn:
-					Utils.writeLog(Utils.LOG_FILE_NAME,"开始日志", false);
+					Utils.writeLog(Utils.MEM_FILE_NAME,"开始日志", false);
 					Utils.writeLog(Utils.CPU_FILE_NAME,"开始日志", false);
 					tv.setText("创建日志，请打开需要测试APP后点击'写日志'按钮开始测试");
 					break;
@@ -142,11 +159,12 @@ public class MainActivity extends Activity {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			Utils.writeLog(Utils.LOG_FILE_NAME,"day day up", true);
+			MemInfo.getMemoryForPid(getApplicationContext(), pid, Utils.MEM_FILE_NAME);
 			Message msg = handler.obtainMessage();
-			msg.what = WRITE_LOG;
+			msg.what = WRITE_MEM_LOG;
 			handler.sendMessage(msg);
-			Log.e("MainActivity", "button1");
+			handler.postDelayed(this, 60000 * Utils.DELAYTIME);			
+			Log.e("MainActivity", "MemInfo");
 		}
 		
 	}
@@ -158,10 +176,10 @@ public class MainActivity extends Activity {
 			Utils.writeLog(Utils.CPU_FILE_NAME, "CpuTimeForPid:" + CpuInfo.getCpuTimeForPid(pid), true);
 			Utils.writeLog(Utils.CPU_FILE_NAME, "CpuTotalTime:" + CpuInfo.getCpuTotalTime(), true);
 			Message msg = handler.obtainMessage();
-			msg.what = WRITE_ALOG;
+			msg.what = WRITE_CPU_LOG;
 			handler.sendMessage(msg);
 			handler.postDelayed(this, 60000 * Utils.DELAYTIME);
-			Log.e("MainActivity", "button2");
+			Log.e("MainActivity", "CpuInfo");
 		}
 		
 	}
@@ -173,15 +191,21 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 			Message msg = handler.obtainMessage();
 			msg.what = ANALYZE_LOG;
-			double[] arrValues = Utils.getCpuPercent(Utils.CPU_FILE_NAME);
+			double[] arrValues = Utils.getCpuPercent();
 			double[] arrx = new double[arrValues.length];
 			arrx[0] = 0;
 			for (int i = 1; i < arrx.length; i++) {
 				arrx[i] = arrx[i - 1] + Utils.DELAYTIME;
 			}
+			List<double[]> infoValues = Utils.getMemInfo();			
 			Bundle bundle = new Bundle();
-			bundle.putDoubleArray("values", arrValues);
+			bundle.putDoubleArray("cpu", arrValues);
+			bundle.putDoubleArray("TotalPss", infoValues.get(0));
+			bundle.putDoubleArray("TotalPrivateDirty", infoValues.get(1));
+			bundle.putDoubleArray("TotalSharedDirty", infoValues.get(2));
 			bundle.putDoubleArray("x", arrx);
+			bundle.putStringArray("title", new String[]{"cpu","TotalPss","TotalPrivateDirty","TotalSharedDirty"});
+			//bundle.putStringArray("title", new String[]{"TotalPss","TotalPrivateDirty","TotalSharedDirty"});
 			msg.setData(bundle);
 			handler.sendMessage(msg);
 			Log.e("MainActivity", "button3");
@@ -196,8 +220,8 @@ public class MainActivity extends Activity {
 		handler.removeCallbacks(runnable);
 		handler.removeCallbacks(infoRunnable);
 		handler.removeCallbacks(analyzeRunnable);
-		handler.removeMessages(WRITE_LOG);
-		handler.removeMessages(WRITE_ALOG);
+		handler.removeMessages(WRITE_MEM_LOG);
+		handler.removeMessages(WRITE_CPU_LOG);
 		handler.removeMessages(ANALYZE_LOG);
 		Log.e("MainActivity", "onDestroy");
 	}

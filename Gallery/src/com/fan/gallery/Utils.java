@@ -22,9 +22,33 @@ import android.util.Log;
 
 public class Utils {
 	private static final String TAG = "write info:";
-	public static final String LOG_FILE_NAME = "log1.txt";
-	public static final String CPU_FILE_NAME = "log2.txt";
-	public static final int DELAYTIME = 1;
+	public static final String DIR_NAME = "/Gallery/";
+	public static final String MEM_FILE_NAME = "MemInfo.txt";
+	public static final String CPU_FILE_NAME = "CpuInfo.txt";
+	public static final int DELAYTIME = 1;	
+	private static final long KB = 1024;
+	private static final long MB = KB * 1024;
+	private static final long GB = MB * 1024;
+	/**
+	 * Formats data size in KB, MB, from the given bytes.
+	 * @param size
+	 *            data size in bytes
+	 * @return the formatted size such as 4.52 MB or 245 KB or 332 B
+	 */ 
+	public static String convertFileSize(long size) { 
+        if (size >= GB) {
+            return String.format("%.2f GB", (float) size / GB);
+        } else if (size >= MB) {
+            float f = (float) size / MB;
+            return String.format( "%.2f MB", f);
+        } else if (size >= KB) {
+            float f = (float) size / KB;
+            return String.format("%.2f KB", f);
+        } else
+            return String.format("%d B", size);
+    }
+	
+	
     /** 
      * 判断SDCard是否存在 [当没有外挂SD卡时，内置ROM也被识别为存在sd卡] 
      *  
@@ -53,6 +77,15 @@ public class Utils {
       
     } 
     
+    public static boolean dirExist(String path){
+    	File file = new File(Environment.getExternalStorageDirectory() + path);
+    	return file.exists();	
+    }
+    
+    public static boolean fileExist(String path,String fileName) {
+		File file = new File(Environment.getExternalStorageDirectory() + path,fileName);
+		return file.exists();
+	}
     /**
      * 写日志
      * @param info 
@@ -63,10 +96,26 @@ public class Utils {
      */  
     public static void writeLog(String fileName,String info,Boolean flag){
     	if (isSdCardExist()) {
-            File file = new File(Environment.getExternalStorageDirectory(), fileName);          
+    		OutputStreamWriter writer = null;
+    		BufferedWriter bw = null; 
+    		File file = null;
+    		if (!dirExist(DIR_NAME)) {
+    			file = new File(Environment.getExternalStorageDirectory() + DIR_NAME); 
+    			file.mkdir();
+			}
+    		if (!fileExist(DIR_NAME, fileName)) {
+				file = new File(Environment.getExternalStorageDirectory() + DIR_NAME, fileName);
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+    		file = new File(Environment.getExternalStorageDirectory() + DIR_NAME, fileName);
     		try { 
-    			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file,flag),"gbk");
-    			BufferedWriter bw = new BufferedWriter(writer);  		    			 
+    			writer = new OutputStreamWriter(new FileOutputStream(file,flag),"gbk");
+    			bw = new BufferedWriter(writer);  		    			 
     		    SimpleDateFormat sDateFormat = new SimpleDateFormat("[yyyy-MM-dd hh:mm:ss:SSS]");       
     		    String date = sDateFormat.format(new java.util.Date());
     		    bw.write(date + info + "\r\n");  
@@ -78,8 +127,19 @@ public class Utils {
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
-    		}  
-     
+    		} 
+    		finally{
+    			if (bw != null) {
+					try {
+						bw.close();
+						writer.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+    			
+    		}
         }
 	}
     
@@ -96,7 +156,7 @@ public class Utils {
 	    String str = "";
     	if (isSdCardExist()) {
 			try {
-	    		File file = new File(Environment.getExternalStorageDirectory(), fileName);     
+	    		File file = new File(Environment.getExternalStorageDirectory() + DIR_NAME, fileName);     
 	    		InputStreamReader reader = new InputStreamReader(new FileInputStream(file), "gbk");
 	    	    BufferedReader br = new BufferedReader(reader);  
 	    	    String readline = "";    
@@ -122,12 +182,13 @@ public class Utils {
     	return str;	     
     } 
 	
-	public static double[] getCpuPercent(String fileName) {
-		String info = readLog(fileName);
+	public static double[] getCpuPercent() {
+		String info = readLog(CPU_FILE_NAME);
         String eL = "\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]\\w*:";		
         Pattern p = Pattern.compile(eL);
         String[] arr = p.split(info);
-        if (arr.length <= 3) {
+        int len = arr.length;
+        if (len <= 3) {
 			return new double[]{0};
 		}
         String[] arrPidCpuTime = new String[(arr.length - 1)/2];
@@ -135,21 +196,57 @@ public class Utils {
         double[] arrPercent = new double[arrPidCpuTime.length - 1];
         long pidCpuTime,cpuTotalTime;
         int k = 1;
-        for (int i = 0; i < arrPidCpuTime.length; i++) {
+        len = arrPidCpuTime.length;
+        for (int i = 0; i < len; i++) {
 			arrPidCpuTime[i] = arr[k];
+			arrCpuTotalTime[i] = arr[k + 1];
 			k += 2;
 		}
-        k = 2;
-        for (int i = 0; i < arrPidCpuTime.length; i++) {
-			arrCpuTotalTime[i] = arr[k];
-			k += 2;
-		}
-        for (int i = 0; i < arrPercent.length; i++) {
+        len = arrPercent.length;
+        for (int i = 0; i < len; i++) {
 			pidCpuTime = Long.parseLong(arrPidCpuTime[i+1]) - Long.parseLong(arrPidCpuTime[i]);
 			cpuTotalTime = Long.parseLong(arrCpuTotalTime[i+1]) - Long.parseLong(arrCpuTotalTime[i]);
 			float f = (float)pidCpuTime/cpuTotalTime;
 			arrPercent[i] = getPercent(f);
 		}      
 		return arrPercent;
+	}
+	
+	public static List<double[]> getMemInfo() {
+		String info = readLog(MEM_FILE_NAME);
+        String eL = "\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]\\w*:";		
+        Pattern p = Pattern.compile(eL);
+        String[] arr = p.split(info);
+        int len = arr.length;
+        if (len <= 1) {
+			return new ArrayList<double[]>();
+		}
+        double[] arrTotalPss = new double[(arr.length - 1)/3];
+        double[] arrTotalPrivateDirty = new double[(arr.length - 1)/3];
+        double[] arrTotalSharedDirty = new double[(arr.length - 1)/3];
+        len = arrTotalPss.length;
+        int k = 1;
+        String str;
+        double d;
+        for (int i = 0; i < len; i++) {
+			str = arr[k];
+			int end = str.indexOf("B") - 1;
+			str = str.substring(0, end);
+			arrTotalPss[i] = Double.parseDouble(str);
+			str = arr[k + 1];
+			end = str.indexOf("B") - 1;
+			str = str.substring(0, end);
+			arrTotalPrivateDirty[i] = Double.parseDouble(str);
+			str = arr[k + 2];
+			end = str.indexOf("B") - 1;
+			str = str.substring(0, end);
+			arrTotalSharedDirty[i] = Double.parseDouble(str);
+        	k += 3;
+		}     
+        List<double[]> arrList = new ArrayList<double[]>();
+        arrList.add(arrTotalPss);
+        arrList.add(arrTotalPrivateDirty);
+        arrList.add(arrTotalSharedDirty);
+		return arrList;
 	}
 }
