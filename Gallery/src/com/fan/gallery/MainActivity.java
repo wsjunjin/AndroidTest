@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.os.Build;
 
 public class MainActivity extends Activity {
+	private static final String TAG = "Gallery";
 	private static final int WRITE_MEM_LOG = 0;
 	private static final int WRITE_CPU_LOG = 1;
 	private static final int ANALYZE_LOG = 2;
@@ -47,11 +48,11 @@ public class MainActivity extends Activity {
 	private TextView cputv;
 	private TextView memtv;
 	private Handler handler;
-	private LogRunnable runnable;
-	private LogInfoRunnable infoRunnable;
-	private AnalyzeRunnable analyzeRunnable;	
-	private AnalyzeRunnable cpuinfoRunnable;
-	private AnalyzeRunnable meminfoRunnable;
+	private LogRunnable runnable;  //Memory
+	private LogInfoRunnable infoRunnable;  //Cpu
+	private AnalyzeRunnable analyzeRunnable;  //获取日志信息	
+	private AnalyzeRunnable cpuinfoRunnable;  //获取cpu信息
+	private AnalyzeRunnable meminfoRunnable;  //获取Memory信息
 	
 	private int pid;
 
@@ -211,7 +212,7 @@ public class MainActivity extends Activity {
 			msg.what = WRITE_MEM_LOG;
 			handler.sendMessage(msg);
 			handler.postDelayed(this, 60000 * Utils.DELAYTIME);			
-			Log.e("MainActivity", "MemInfo");
+			//Log.e(TAG, "写MemInfo");
 		}
 		
 	}
@@ -226,7 +227,7 @@ public class MainActivity extends Activity {
 			msg.what = WRITE_CPU_LOG;
 			handler.sendMessage(msg);
 			handler.postDelayed(this, 60000 * Utils.DELAYTIME);
-			Log.e("MainActivity", "CpuInfo");
+			//Log.e(TAG, "写CpuInfo");
 		}
 		
 	}
@@ -270,7 +271,7 @@ public class MainActivity extends Activity {
 			}
 			msg.setData(bundle);
 			handler.sendMessage(msg);
-			Log.e("MainActivity", "button3");
+			//Log.e(TAG, "获取日志信息");
 		}
 		
 	}

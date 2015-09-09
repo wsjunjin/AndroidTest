@@ -54,6 +54,13 @@ public class CpuInfo {
         PROC_SPACE_TERM|PROC_OUT_LONG,                  // 6: irq time
         PROC_SPACE_TERM|PROC_OUT_LONG                   // 7: softirq time
     };
+    
+    /** 
+     * 获取uid
+     * @param context
+     * @param pkgName 包名
+     * @return 返回包对应uid
+     */ 
 	public static int getUid(Context context,String pkgName) {
 		// TODO Auto-generated method stub
 		int uid = 0;
@@ -70,6 +77,13 @@ public class CpuInfo {
 		return uid;
 	}
 	
+    /** 
+     * 获取uid和包名对应pid
+     * @param context
+     * @param uid 
+     * @param pkgName 包名
+     * @return 返回包对应pid
+     */ 
 	public static int getPid(Context context,int uid,String pkgName){
 		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcessInfos = am.getRunningAppProcesses();
@@ -81,7 +95,13 @@ public class CpuInfo {
 		}		
 		return pid;
 	}
-		
+	
+    /** 
+     * 获取uid对应所有pid
+     * @param context
+     * @param uid 
+     * @return 返回uid对应pid
+     */
 	public static HashMap<Integer, String> getPidInfo(Context context,int uid){
 		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcessInfos = am.getRunningAppProcesses();
@@ -89,12 +109,15 @@ public class CpuInfo {
 		for (RunningAppProcessInfo pf:runningAppProcessInfos) {
 			if (pf.uid == uid) {
 				hashMap.put(pf.pid, pf.processName);
-				Log.e("info", "pid: " + pf.pid + "name: " + pf.processName + "uid:" + pf.uid);
+				//Log.e("info", "pid: " + pf.pid + "name: " + pf.processName + "uid:" + pf.uid);
 			}
 		}		
 		return hashMap;
 	}
 	
+    /** 
+     * 获取pid信息
+     */
 	public static int[] getPids(HashMap<Integer, String> hashMap){
 		int[] arrPid = new int[hashMap.size()];
 		Iterator iterator = hashMap.entrySet().iterator();
@@ -105,47 +128,9 @@ public class CpuInfo {
 		return arrPid;
 	}
 	
-	public static void getMemoryInfo(Context context,HashMap<Integer, String> hashMap) {
-		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-		int[] pids = new int[hashMap.size()];
-		String[] names = new String[hashMap.size()];
-		Iterator iterator = hashMap.entrySet().iterator();
-		for (int i = 0; i < hashMap.size(); i++) {
-			Entry< Integer, String> entry = (Entry<Integer, String>) iterator.next();
-			pids[i] = entry.getKey();
-			names[i] = entry.getValue();
-			Log.e("pid info:", "pid:" + pids[i] + " name:" + names[i]);
-		}
-		MemoryInfo[] memoryInfos = am.getProcessMemoryInfo(pids);
-			
-	}
-	
-	public static void getMemoryForPid(Context context,int pid) {
-		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-		int[] pids = {pid,};
-		MemoryInfo[] memoryInfos = am.getProcessMemoryInfo(pids);
-		ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
-		am.getMemoryInfo(outInfo);
-		long availMem = outInfo.availMem;
-		long  totalMem = outInfo.totalMem;
-/*		Utils.writeLog("TotalPss:" + memoryInfos[0].getTotalPss() + " KB TotalPrivateDirty:" + memoryInfos[0].getTotalPrivateDirty()
-				+ " KB TotalSharedDirty:" + memoryInfos[0].getTotalSharedDirty() + " KB", true);*/
-		Log.e("cpuInfo", "length:" + String.valueOf(memoryInfos.length));
-		Log.e("dalvikPrivateDirty", String.valueOf(memoryInfos[0].dalvikPrivateDirty));
-		Log.e("dalvikPss", String.valueOf(memoryInfos[0].dalvikPss));
-		Log.e("dalvikSharedDirty", String.valueOf(memoryInfos[0].dalvikSharedDirty));
-		Log.e("nativePrivateDirty", String.valueOf(memoryInfos[0].nativePrivateDirty));
-		Log.e("nativePss", String.valueOf(memoryInfos[0].nativePss));
-		Log.e("nativeSharedDirty",String.valueOf(memoryInfos[0].nativeSharedDirty));
-		Log.e("TotalPss", String.valueOf(memoryInfos[0].getTotalPss()));	
-		Log.e("TotalPrivateDirty", String.valueOf(memoryInfos[0].getTotalPrivateDirty()));
-		Log.e("TotalSharedDirty", String.valueOf(memoryInfos[0].getTotalSharedDirty()));
-/*		Log.e("RSS", String.valueOf(memoryInfos[0].getTotalSharedClean()));
-		Log.e("RSS", String.valueOf(memoryInfos[0].getTotalPrivateClean()));*/
-	
-	}
-	
-	
+    /** 
+     * 获取pid对应CpuTime
+     */
 	public static long getCpuTimeForPid(int pid) {
         final String statFile = "/proc/" + pid + "/stat";
         final long[] statsData = new long[4];
@@ -154,7 +139,7 @@ public class CpuInfo {
         	Method read = process.getMethod("readProcFile", String.class,int[].class,String[].class,long[].class,float[].class);                  
         	if ((Boolean)read.invoke(process.newInstance(), statFile, PROCESS_STATS_FORMAT,null, statsData, null)) {
         		long time = statsData[PROCESS_STAT_UTIME] + statsData[PROCESS_STAT_STIME];
-        		Log.e("CpuTimeForPid", String.valueOf(time));
+        		//Log.e("CpuTimeForPid", String.valueOf(time));
         		return time;
 			  }
             } catch (ClassNotFoundException e) {
@@ -179,6 +164,9 @@ public class CpuInfo {
         return 0;
     }
 	
+    /** 
+     * 获取CpuTime
+     */
 	public static long getCpuTotalTime() {
 		final long[] sysCpu = new long[7];
 		try {
@@ -197,7 +185,7 @@ public class CpuInfo {
 	            final long irqtime = sysCpu[5];
 	            final long softirqtime = sysCpu[6];
 	            long totalTime = usertime + systemtime + idletime + irqtime + softirqtime;
-	            Log.e("CpuTime", String.valueOf(totalTime));
+	            //Log.e("CpuTime", String.valueOf(totalTime));
 	            
 	            return totalTime;
 			}

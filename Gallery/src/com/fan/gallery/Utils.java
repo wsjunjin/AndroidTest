@@ -77,17 +77,34 @@ public class Utils {
       
     } 
     
-    public static boolean dirExist(String path){
-    	File file = new File(Environment.getExternalStorageDirectory() + path);
+    /** 
+     * 判断目录是否存在
+     * @param dir
+     *        目录名 
+     * @return 
+     */   
+    public static boolean dirExist(String dir){
+    	File file = new File(Environment.getExternalStorageDirectory() + dir);
     	return file.exists();	
     }
     
-    public static boolean fileExist(String path,String fileName) {
-		File file = new File(Environment.getExternalStorageDirectory() + path,fileName);
+    /** 
+     * 判断文件是否存在
+     * @param dir
+     *        目录名 
+     * @param fileName
+     *        文件名
+     * @return 
+     */ 
+    public static boolean fileExist(String dir,String fileName) {
+		File file = new File(Environment.getExternalStorageDirectory() + dir,fileName);
 		return file.exists();
 	}
+    
     /**
      * 写日志
+     * @param fileName
+     *        文件名称
      * @param info 
      *        需要写入的日志信息
      * @param flag  
@@ -143,6 +160,10 @@ public class Utils {
         }
 	}
     
+    /**
+     * 获取百分比
+     * @param fraction
+     */  
 	public static double getPercent(float fraction) {
 		fraction *= 100;
 	    double d = Math.round(fraction);
@@ -151,6 +172,8 @@ public class Utils {
 	
     /** 
      * 读日志
+     * @param fileName
+     *        文件名称
      */ 
     public static String readLog(String fileName) {  
 	    String str = "";
@@ -182,6 +205,9 @@ public class Utils {
     	return str;	     
     } 
 	
+    /** 
+     * 获取Cpu信息
+     */ 
 	public static double[] getCpuPercent() {
 		String info = readLog(CPU_FILE_NAME);
         String eL = "\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]\\w*:";		
@@ -212,6 +238,10 @@ public class Utils {
 		return arrPercent;
 	}
 	
+    /** 
+     * 获取Memory信息
+     * @return 返回信息为TotalPss数组，TotalPrivateDirty数组，TotalSharedDirty数组
+     */ 
 	public static List<double[]> getMemInfo() {
 		String info = readLog(MEM_FILE_NAME);
         String eL = "\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]\\w*:";		

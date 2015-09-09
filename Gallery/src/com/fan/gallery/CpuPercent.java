@@ -22,10 +22,12 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 
 public class CpuPercent extends AbstractChart {
-	private List<double[]> x;
-	private List<double[]> values;
-	private String[] titles;
-	private String name;
+	
+	private List<double[]> x;  //x轴数据信息
+	private List<double[]> values;  //y轴数据信息
+	private String[] titles;  //曲线标题
+	private String name;  //标题 
+	
 	public CpuPercent(List<double[]> arrValues,List<double[]> arrx,String[] titles,String name){
 		this.values = arrValues;
 		this.x = arrx;
