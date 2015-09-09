@@ -10,7 +10,7 @@
         android:id="@+id/analyzeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/result"
+        android:layout_above="@+id/cpuInfo"
         android:layout_alignParentRight="true"
         android:layout_marginRight="21dp"
         android:text="分析日志" />
@@ -19,7 +19,7 @@
         android:id="@+id/writeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/result"
+        android:layout_above="@+id/cpuInfo"
         android:layout_centerHorizontal="true"
         android:text="写日志" />
 
@@ -56,12 +56,21 @@
         android:text="创建日志" />
 
     <TextView
-        android:id="@+id/result"
+        android:id="@+id/cpuInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/createBtn"
         android:layout_marginTop="44dp"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/memInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/cpuInfo"
+        android:layout_marginTop="78dp"
         android:text="TextView" />
 
 </RelativeLayout>

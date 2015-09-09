@@ -25,18 +25,16 @@ public class CpuPercent extends AbstractChart {
 	private List<double[]> x;
 	private List<double[]> values;
 	private String[] titles;
-	public CpuPercent(List<double[]> arrValues,List<double[]> arrx,String[] titles){
+	private String name;
+	public CpuPercent(List<double[]> arrValues,List<double[]> arrx,String[] titles,String name){
 		this.values = arrValues;
 		this.x = arrx;
 		this.titles = titles;
+		this.name = name;
 	}
 
 	public String getName() {
-		return "Cpu Percent";
-	}
-
-	public String getDesc() {
-		return "The average temperature in 4 Greek islands (line chart)";
+		return this.name;
 	}
 
 	/**
@@ -47,10 +45,19 @@ public class CpuPercent extends AbstractChart {
 	 * @return the built intent
 	 */
 	public Intent execute(Context context) {
-	
-		int[] colors = new int[] { Color.BLUE,Color.GREEN,Color.RED,Color.CYAN};
-		// 点的样式
-		PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE,PointStyle.CIRCLE,PointStyle.CIRCLE,PointStyle.CIRCLE};
+		int[] colors = null;
+		PointStyle[] styles = null;
+	    if (titles.length == 1) {
+			colors = new int[] { Color.BLUE};
+			// 点的样式
+			styles = new PointStyle[] { PointStyle.CIRCLE};
+		}
+	    else {
+			colors = new int[] { Color.BLUE,Color.GREEN,Color.RED};
+			// 点的样式
+			styles = new PointStyle[] { PointStyle.CIRCLE,PointStyle.CIRCLE,PointStyle.CIRCLE};
+		}
+
 		XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
 		int length = renderer.getSeriesRendererCount();
 		// 点是空心还是实心
@@ -75,8 +82,15 @@ public class CpuPercent extends AbstractChart {
 		renderer.setYLabelsColor(0, Color.BLACK);
 
 		// 最后两个参数代表轴的颜色和轴标签的颜色
-		setChartSettings(renderer, "Cpu Percent", "time/min",
-				"cpu usage/%", 1, 12.5, 1, 40, Color.BLACK, Color.BLACK);
+		if (titles.length == 1) {
+			setChartSettings(renderer, getName(), "time/min",
+					"%", 1, 12.5, 1, 40, Color.BLACK, Color.BLACK);
+		}
+		else {
+			setChartSettings(renderer, getName(), "time/min",
+					"MB", 1, 12.5, 1, 40, Color.BLACK, Color.BLACK);
+		}
+		
 		// 轴上数字的数量
 		renderer.setXLabels(12);
 		renderer.setYLabels(10);
@@ -89,10 +103,18 @@ public class CpuPercent extends AbstractChart {
 		// renderer.setZoomButtonsVisible(true);
 		// renderer.setPanLimits(new double[] { -10, 20, -10, 40 });
 		// renderer.setZoomLimits(new double[] { -10, 20, -10, 40 });
-
-		Intent intent = ChartFactory.getLineChartIntent(context,
-				buildDataset(titles, x, values), renderer,
-				"Cpu Percent");
+		Intent intent = null;
+		if (titles.length == 1) {
+			intent = ChartFactory.getLineChartIntent(context,
+					buildDataset(titles, x, values), renderer,
+					getName());
+		}
+		else {
+			intent = ChartFactory.getLineChartIntent(context,
+					buildDataset(titles, x, values), renderer,
+					getName());
+		}	
+		
 		return intent;
 	}
 
