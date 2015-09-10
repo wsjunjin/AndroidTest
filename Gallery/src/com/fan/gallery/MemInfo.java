@@ -16,7 +16,7 @@ public class MemInfo {
      * 获取HeapMemInfo 获取正在执行app的HeapMemInfo，目前貌似不太适用
      */
 	public static void getHeapMemInfo() {
-		long nativeHeapSize = Debug.getNativeHeapSize();
+		long nativeHeapSize = Debug.getNativeHeapSize();//KB
 		long nativeHeapFreeSize = Debug.getNativeHeapFreeSize();
 		long nativeHeapAllocatedSize = Debug.getNativeHeapAllocatedSize();
 		Runtime runtime = Runtime.getRuntime();
@@ -47,9 +47,9 @@ public class MemInfo {
 		MemoryInfo[] memoryInfos = am.getProcessMemoryInfo(pids);
 		len = memoryInfos.length;
 		for (int i = 0; i < len; i++) {
-			Utils.writeLog(fileName,names[i] + "-TotalPss:" + Utils.convertFileSize(memoryInfos[i].getTotalPss()) , true);
-			Utils.writeLog(fileName,names[i] + "-TotalPrivateDirty:" + Utils.convertFileSize(memoryInfos[i].getTotalPrivateDirty()) , true);
-			Utils.writeLog(fileName,names[i] + "-TotalSharedDirty:" + Utils.convertFileSize(memoryInfos[i].getTotalSharedDirty()) , true);
+			Utils.writeLog(fileName,names[i] + "-TotalPss:" + Utils.convertFileSize(memoryInfos[i].getTotalPss()*1024) , true);
+			Utils.writeLog(fileName,names[i] + "-TotalPrivateDirty:" + Utils.convertFileSize(memoryInfos[i].getTotalPrivateDirty()*1024) , true);
+			Utils.writeLog(fileName,names[i] + "-TotalSharedDirty:" + Utils.convertFileSize(memoryInfos[i].getTotalSharedDirty()*1024) , true);
 		}
 			
 	}
@@ -69,9 +69,9 @@ public class MemInfo {
 		am.getMemoryInfo(outInfo);
 		long availMem = outInfo.availMem;
 		long  totalMem = outInfo.totalMem;
-		Utils.writeLog(fileName,"TotalPss:" + Utils.convertFileSize(memoryInfos[0].getTotalPss()) , true);
-		Utils.writeLog(fileName,"TotalPrivateDirty:" + Utils.convertFileSize(memoryInfos[0].getTotalPrivateDirty()), true);
-		Utils.writeLog(fileName,"TotalSharedDirty:" + Utils.convertFileSize(memoryInfos[0].getTotalSharedDirty()), true);
+		Utils.writeLog(fileName,"TotalPss:" + Utils.convertFileSize(memoryInfos[0].getTotalPss()*1024) , true);
+		Utils.writeLog(fileName,"TotalPrivateDirty:" + Utils.convertFileSize(memoryInfos[0].getTotalPrivateDirty()*1024), true);
+		Utils.writeLog(fileName,"TotalSharedDirty:" + Utils.convertFileSize(memoryInfos[0].getTotalSharedDirty()*1024), true);
 /*		Log.e("cpuInfo", "length:" + String.valueOf(memoryInfos.length));
 		Log.e("dalvikPrivateDirty", String.valueOf(memoryInfos[0].dalvikPrivateDirty));
 		Log.e("dalvikPss", String.valueOf(memoryInfos[0].dalvikPss));
