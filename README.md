@@ -15,7 +15,7 @@ Step1.输入监测App包名，包名可以通过adb shell pm list packages获取
 
 Step2.点击“创建日志”清空日志信息
 
-Step3.点击“写日志”会写入日志信息，目前采样数据间隔为1min，可以通过Utils.DELAYTIME设置采样间隔。
+Step3.点击“开始监测”会打开被测app并写入日志信息，目前采样数据间隔为1min，可以通过Utils.DELAYTIME设置采样间隔。
 
 Step4.点击“分析日志”会分别获取Cpu，Memory采样信息，Cpu采样信息单位为%，Memory采样信息单位转为对应字节(形如MB)
 
