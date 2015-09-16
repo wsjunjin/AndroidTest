@@ -16,7 +16,11 @@ import android.R.integer;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -169,15 +173,17 @@ public class MainActivity extends Activity {
 			if (Utils.isSdCardExist()) {
 				String packageName = pkgName.getText().toString();
 				int uid = CpuInfo.getUid(getApplicationContext(),packageName);
-				pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
 				switch (v.getId()) {
 				case R.id.createBtn:
 					Utils.writeLog(Utils.MEM_FILE_NAME,"开始日志", false);
 					Utils.writeLog(Utils.CPU_FILE_NAME,"开始日志", false);
-					cputv.setText("创建日志，请打开需要测试APP后点击'写日志'按钮开始测试");
+					cputv.setText("创建日志，请点击‘开始监测’进行测试");
 					memtv.setText("");
 					break;
 				case R.id.writeBtn:
+					startTestApp(getApplicationContext(), packageName);
+					pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
+					Log.e("pid", String.valueOf(pid));
 					new Thread(runnable).start();
 					new Thread(infoRunnable).start();
 					break;
@@ -244,12 +250,19 @@ public class MainActivity extends Activity {
 			Message msg = handler.obtainMessage();
 			msg.what = what;
 			double[] arrValues = Utils.getCpuPercent();
-			double[] arrx = new double[arrValues.length];
-			arrx[0] = 0;
-			for (int i = 1; i < arrx.length; i++) {
-				arrx[i] = arrx[i - 1] + Utils.DELAYTIME;
+			double[] arrcpux = new double[arrValues.length];			
+			arrcpux[0] = 0;
+			int len = arrcpux.length;
+			for (int i = 1; i < len; i++) {
+				arrcpux[i] = arrcpux[i - 1] + Utils.DELAYTIME;
 			}
-			List<double[]> infoValues = Utils.getMemInfo();			
+			List<double[]> infoValues = Utils.getMemInfo();	
+			double[] arrmemx = new double[infoValues.size()/3];
+			arrmemx[0] = 0;
+			len = arrcpux.length;
+			for (int i = 1; i < len; i++) {
+				arrmemx[i] = arrmemx[i - 1] + Utils.DELAYTIME;
+			}
 			Bundle bundle = new Bundle();
 			if (what == ANALYZE_LOG) {
 				bundle.putDoubleArray("cpu", arrValues);
@@ -259,14 +272,14 @@ public class MainActivity extends Activity {
 			}
 			else if (what == ANALYZE_CPU_LOG) {
 				bundle.putDoubleArray("cpu", arrValues);
-				bundle.putDoubleArray("x", arrx);
+				bundle.putDoubleArray("x", arrcpux);
 				bundle.putStringArray("title", new String[]{"cpu"});
 			}
 			else {
 				bundle.putDoubleArray("TotalPss", infoValues.get(0));
 				bundle.putDoubleArray("TotalPrivateDirty", infoValues.get(1));
 				bundle.putDoubleArray("TotalSharedDirty", infoValues.get(2));
-				bundle.putDoubleArray("x", arrx);
+				bundle.putDoubleArray("x", arrmemx);
 				bundle.putStringArray("title", new String[]{"TotalPss","TotalPrivateDirty","TotalSharedDirty"});
 			}
 			msg.setData(bundle);
@@ -289,6 +302,22 @@ public class MainActivity extends Activity {
 		Log.e("MainActivity", "onDestroy");
 	}
 
+	public void startTestApp(Context context,String pkgName){
+		PackageManager pm = context.getPackageManager();
+		PackageInfo pInfo;
+		try {
+			pInfo = pm.getPackageInfo(pkgName, 0);		                   
+            Intent intent = new Intent();  
+
+            //获取intent  		 
+            intent = pm.getLaunchIntentForPackage(pkgName);  		 
+            startActivity(intent);  
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 

@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/cpuInfo"
         android:layout_centerHorizontal="true"
-        android:text="写日志" />
+        android:text="开始监测" />
 
     <TextView
         android:id="@+id/packageName"
