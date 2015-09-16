@@ -57,7 +57,6 @@ public class MainActivity extends Activity {
 	private AnalyzeRunnable analyzeRunnable;  //获取日志信息	
 	private AnalyzeRunnable cpuinfoRunnable;  //获取cpu信息
 	private AnalyzeRunnable meminfoRunnable;  //获取Memory信息
-	
 	private int pid;
 
 	@Override
@@ -181,9 +180,17 @@ public class MainActivity extends Activity {
 					memtv.setText("");
 					break;
 				case R.id.writeBtn:
+					//Log.e("start", String.valueOf(System.currentTimeMillis()));
 					startTestApp(getApplicationContext(), packageName);
-					//pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
-					//Log.e("pid", String.valueOf(pid));
+					//Log.e("end", String.valueOf(System.currentTimeMillis()));
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
+					Log.e("pid", String.valueOf(pid));
 					new Thread(runnable).start();
 					new Thread(infoRunnable).start();
 					break;
