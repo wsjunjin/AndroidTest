@@ -182,8 +182,8 @@ public class MainActivity extends Activity {
 					break;
 				case R.id.writeBtn:
 					startTestApp(getApplicationContext(), packageName);
-					pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
-					Log.e("pid", String.valueOf(pid));
+					//pid = CpuInfo.getPid(getApplicationContext(), uid, packageName);
+					//Log.e("pid", String.valueOf(pid));
 					new Thread(runnable).start();
 					new Thread(infoRunnable).start();
 					break;
@@ -256,10 +256,10 @@ public class MainActivity extends Activity {
 			for (int i = 1; i < len; i++) {
 				arrcpux[i] = arrcpux[i - 1] + Utils.DELAYTIME;
 			}
-			List<double[]> infoValues = Utils.getMemInfo();	
-			double[] arrmemx = new double[infoValues.size()/3];
+			List<double[]> infoValues = Utils.getMemInfo();				
+			double[] arrmemx = new double[infoValues.get(0).length];
 			arrmemx[0] = 0;
-			len = arrcpux.length;
+			len = arrmemx.length;
 			for (int i = 1; i < len; i++) {
 				arrmemx[i] = arrmemx[i - 1] + Utils.DELAYTIME;
 			}
